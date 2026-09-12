@@ -1,0 +1,72 @@
+{
+  "_note": "Givia ISP/CIDR 수동 사전 — 사람이 직접 관리하는 파일입니다. 각 사이트의 플러그인이 주 1회 이 파일을 받아갑니다.",
+  "_warning": "⚠️ 소비자 ISP(KT/SK Broadband/LG U+/모바일 통신사) 대역에 \"exclude\" 를 넣지 마세요. 실제 방문자가 통계에서 빠져 '광고 클릭보다 적게' 잡힙니다. 그런 대역은 action 을 \"none\"(라벨 전용)으로 두세요. 제외는 데이터센터·클라우드·크롤러에만.",
+  "_groups": {
+    "labels": "라벨 전용(action=none) — ISP 열에 표시되고 유입분류 판정에만 쓰입니다. 통계는 줄지 않습니다.",
+    "exclude": "통계 제외(action=exclude) — 데이터센터/클라우드/IDC 처럼 사람 방문이 아닌 대역에만.",
+    "bots": "크롤러 대역(action=exclude, class=bot) — 「봇 제외」 토글(exclude_bots)이 켜져 있을 때만 적용됩니다. 공식 발행 5곳(Google·Bing·Apple·OpenAI·Perplexity)은 `gb-isp-import.php bot` 이 자동으로 채우므로 여기 직접 넣을 필요는 없습니다."
+  },
+  "_howto": {
+    "1_받아가기": "각 사이트: 플러그인 설정에서 이 파일의 raw URL 등록 → 주 1회 자동 동기화(검증 실패 시 이전 사전 유지)",
+    "2_추가하기": "아래 형식으로 항목을 늘리고 commit. version 을 올리면 사이트가 '갱신됨'을 인식합니다.",
+    "3_자동생성": "KRNIC 공식 할당현황 + AWS/GCP + 크롤러 공식 대역은 로컬에서 `php plugins/statistics/borom-labs-visitor/tools/gb-isp-import.php {krnic|cloud|bot}` 로 만들어 플러그인에 동봉됩니다. 이 수동 파일은 그 위에 덮어쓰는 '운영자 규칙'입니다.",
+    "4_우선순위": "사이트 옵션(로그 표의 ＋추가 버튼) > 이 원격 파일 > 플러그인 동봉 사전",
+    "5_CIDR규칙": "개별 IP(.25, .12 …) 대신 반드시 대역으로 쓰세요. 같은 /24 는 한 줄이면 끝납니다. 아래 cidrs 는 모두 KRNIC 실제 할당 대역에서 가져온 예시입니다."
+  },
+  "version": "2026.09.12.1",
+  "updated": "2026-09-12",
+
+  "labels": {
+    "Korea Telecom": {
+      "class": "mobile",
+      "action": "none",
+      "cidrs": ["1.96.0.0/12", "14.32.0.0/11"],
+      "_note": "KT 소비자·모바일 — 라벨만. 절대 exclude 금지."
+    },
+    "SK Broadband": {
+      "class": "consumer",
+      "action": "none",
+      "cidrs": ["1.224.0.0/13", "39.112.0.0/12"]
+    },
+    "LG U+": {
+      "class": "mobile",
+      "action": "none",
+      "cidrs": ["1.208.0.0/12", "211.234.0.0/18"]
+    },
+    "Dreamline": {
+      "class": "datacenter",
+      "action": "none",
+      "cidrs": ["211.249.0.0/16"],
+      "_note": "예: 211.249.40.25 는 이 대역입니다(KRNIC 등록 = 드림라인). 라벨만 붙이고 제외는 하지 않습니다."
+    }
+  },
+
+  "exclude": {
+    "NAVER": {
+      "class": "datacenter",
+      "action": "exclude",
+      "cidrs": ["27.96.128.0/21", "125.209.192.0/18"],
+      "_note": "네이버 자체 인프라(크롤러·API). 사람 방문이 아니므로 제외. 단 광고 유입(gclid·n_media 등)은 이 대역이어도 제외되지 않습니다(하드 룰)."
+    },
+    "NHN Cloud": {
+      "class": "datacenter",
+      "action": "exclude",
+      "cidrs": ["43.227.116.0/22"]
+    },
+    "예시_운영중_추가할_대역": {
+      "class": "datacenter",
+      "action": "exclude",
+      "cidrs": ["203.0.113.0/24"],
+      "_note": "자리 표시용(TEST-NET, 실제 대역 아님). 운영하면서 '통계에 계속 잡히는 대역'을 여기에 계속 추가하세요. 개별 IP 대신 /24 로."
+    }
+  },
+
+  "bots": {
+    "수동_확인한_크롤러_대역": {
+      "class": "bot",
+      "action": "exclude",
+      "cidrs": [],
+      "_note": "ByteDance(Bytespider)·Meta·Anthropic(ClaudeBot)·Naver(Yeti) 는 CIDR 목록을 공식 발행하지 않습니다 → 플러그인의 UA 기반 감지가 1차 수단(이미 포함). 실측으로 대역을 확인했을 때만 여기에 넣으세요. 빈 배열은 무시됩니다."
+    }
+  }
+}
